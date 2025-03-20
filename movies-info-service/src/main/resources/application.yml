@@ -1,0 +1,32 @@
+spring:
+  profiles:
+    active: local
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 5.0.5
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: local
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: local
