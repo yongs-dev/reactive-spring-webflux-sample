@@ -1,5 +1,9 @@
 package com.mark.domain;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,9 +19,16 @@ public class MovieInfo {
 
     @Id
     private final String movieInfoId;
+
+    @NotBlank(message = "movieInfo.name must be present")
     private String name;
+
+    @NotNull
+    @Positive(message = "movieInfo.year must be a Positive value")
     private Integer year;
-    private List<String> casts;
+
+    @NotEmpty(message = "movieInfo.casts must be present")
+    private List<@NotBlank(message = "movieInfo.cast must be present") String> casts;
     private LocalDate release_date;
 
     public void updateYear(int year) {

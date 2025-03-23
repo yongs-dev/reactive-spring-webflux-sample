@@ -68,6 +68,32 @@ class MoviesInfoRepositoryIntegrationTest {
     }
 
     @Test
+    void findByYear() {
+        // given
+
+        // when
+        Flux<MovieInfo> movieInfoMono = repository.findByYear(2012).log();
+
+        // then
+        StepVerifier.create(movieInfoMono)
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+    @Test
+    void findByName() {
+        // given
+
+        // when
+        Mono<MovieInfo> movieInfoMono = repository.findByName("Dark Knight Rises").log();
+
+        // then
+        StepVerifier.create(movieInfoMono)
+                .assertNext(movieInfo -> assertEquals("Dark Knight Rises", movieInfo.getName()))
+                .verifyComplete();
+    }
+
+    @Test
     void saveMovieInfo() {
         // given
         MovieInfo movieInfo = MovieInfo.builder().name("Batman Begins").year(2005).casts(List.of("Christian Bale", "Michael Cane")).release_date(LocalDate.parse("2005-06-15")).build();

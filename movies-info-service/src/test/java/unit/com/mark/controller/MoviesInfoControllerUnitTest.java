@@ -90,6 +90,24 @@ public class MoviesInfoControllerUnitTest {
     }
 
     @Test
+    void addMovieInfo_validation() {
+        MovieInfo movieInfo = MovieInfo.builder().movieInfoId(TARGET_ID).name("Dark Knight Rises").year(2012).casts(List.of("")).release_date(LocalDate.parse("2012-07-20")).build();
+
+        when(serviceMock.addMovieInfo(isA(MovieInfo.class))).thenReturn(Mono.just(movieInfo));
+
+        webClient.post().uri(MOVIES_INFO_URL)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody(String.class)
+                .consumeWith(response -> {
+                    String responseBody = response.getResponseBody();
+                    assert responseBody != null;
+                });
+    }
+
+    @Test
     void updateMovieInfo() {
         MovieInfo movieInfo = MovieInfo.builder().movieInfoId(TARGET_ID).name("Dark Knight Rises").year(2025).casts(List.of("Christian Bale", "Tom Hardy")).release_date(LocalDate.parse("2025-07-20")).build();
 

@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -55,6 +56,16 @@ class MoviesInfoControllerIntegrationTest {
                 .is2xxSuccessful()
                 .expectBodyList(MovieInfo.class)
                 .hasSize(3);
+    }
+
+    @Test
+    void getAllMovieInfosByYear() {
+        webClient.get().uri(UriComponentsBuilder.fromUriString(MOVIES_INFO_URL).queryParam("year", 2012).buildAndExpand().toUri())
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBodyList(MovieInfo.class)
+                .hasSize(1);
     }
 
     @Test
@@ -105,6 +116,17 @@ class MoviesInfoControllerIntegrationTest {
                     assert updatedMovieInfo.getYear() == 2025;
                     assert updatedMovieInfo.getRelease_date().equals(movieInfo.getRelease_date());
                 });
+    }
+
+    @Test
+    void updateMovieInfo_notFound() {
+        MovieInfo movieInfo = MovieInfo.builder().movieInfoId(null).name("Dark Knight Rises").year(2025).casts(List.of("Christian Bale", "Tom Hardy")).release_date(LocalDate.parse("2025-07-20")).build();
+
+        webClient.put().uri(MOVIES_INFO_URL + "/{id}", movieInfo.getMovieInfoId())
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .isNotFound();
     }
 
     @Test

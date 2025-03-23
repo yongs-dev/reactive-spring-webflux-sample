@@ -7,6 +7,10 @@ de:
     mongodb:
       embedded:
         version: 5.0.5
+
+logging:
+  level:
+    root: info
 ---
 
 spring:
