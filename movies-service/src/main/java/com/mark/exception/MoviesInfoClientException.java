@@ -1,7 +1,13 @@
 package com.mark.exception;
 
-public class MoviesInfoClientException extends RuntimeException{
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class MoviesInfoClientException extends RuntimeException {
     private String message;
+    @Getter
     private Integer statusCode;
 
     public MoviesInfoClientException(String message, Integer statusCode) {
@@ -14,18 +20,4 @@ public class MoviesInfoClientException extends RuntimeException{
     public String getMessage() {
         return message;
     }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Integer getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(Integer statusCode) {
-        this.statusCode = statusCode;
-    }
-
-
 }

@@ -1,10 +1,8 @@
 package com.mark.exception;
 
-public class ReviewsClientException extends RuntimeException{
-    private String message;
+public class ReviewsClientException extends RuntimeException {
 
     public ReviewsClientException(String message) {
         super(message);
-        this.message = message;
     }
 }
