@@ -11,6 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -56,6 +58,38 @@ class MoviesInfoControllerIntegrationTest {
                 .is2xxSuccessful()
                 .expectBodyList(MovieInfo.class)
                 .hasSize(3);
+    }
+
+    @Test
+    void getAllMovieInfos_stream() {
+        MovieInfo movieInfo = MovieInfo.builder().name("Dark Knight Rises").year(2012).casts(List.of("Christian Bale", "Tom Hardy")).release_date(LocalDate.parse("2012-07-20")).build();
+
+        webClient.post().uri(MOVIES_INFO_URL)
+                .bodyValue(movieInfo)
+                .exchange()
+                .expectStatus()
+                .isCreated()
+                .expectBody(MovieInfo.class)
+                .consumeWith(response -> {
+                    MovieInfo savedMovieInfo = response.getResponseBody();
+                    assert savedMovieInfo != null;
+                    assert savedMovieInfo.getMovieInfoId() != null;
+                });
+
+        Flux<MovieInfo> movieInfoFlux = webClient.get().uri(MOVIES_INFO_URL + "/stream")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .returnResult(MovieInfo.class)
+                .getResponseBody();
+
+        StepVerifier.create(movieInfoFlux)
+                .assertNext(savedMovieInfo -> {
+                    assert savedMovieInfo != null;
+                    assert savedMovieInfo.getMovieInfoId() != null;
+                })
+                .thenCancel()
+                .verify();
     }
 
     @Test

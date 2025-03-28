@@ -9,10 +9,12 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ public class ReviewHandler {
 
     private final Validator validator;
     private final ReviewReactiveRepository reviewRepository;
+    private final Sinks.Many<Review> reviewsSink = Sinks.many().replay().latest();
 
     public Mono<ServerResponse> getReviews(ServerRequest request) {
         return request.queryParam("movieInfoId")
@@ -35,6 +38,7 @@ public class ReviewHandler {
         return request.bodyToMono(Review.class)
                 .doOnNext(this::validate)
                 .flatMap(reviewRepository::save)
+                .doOnNext(reviewsSink::tryEmitNext)
                 .flatMap(ServerResponse.status(HttpStatus.CREATED)::bodyValue);
     }
 
@@ -73,5 +77,11 @@ public class ReviewHandler {
         return reviewRepository.findById(id)
                 .flatMap(review -> reviewRepository.deleteById(id))
                 .then(ServerResponse.noContent().build());
+    }
+
+    public Mono<ServerResponse> getReviewsStream(ServerRequest request) {
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_NDJSON)
+                .body(reviewsSink.asFlux(), Review.class);
     }
 }

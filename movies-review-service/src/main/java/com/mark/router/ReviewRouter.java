@@ -21,6 +21,7 @@ public class ReviewRouter {
                                 .GET("", reviewHandler::getReviews)
                                 .PUT("/{id}", reviewHandler::updateReview)
                                 .DELETE("/{id}", reviewHandler::deleteReview)
+                                .GET("/stream", reviewHandler::getReviewsStream)
                 )
                 .build();
     }

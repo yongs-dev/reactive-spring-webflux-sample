@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class MoviesInfoRestClient {
     public Mono<MovieInfo> retrieveMovieInfo(String movieId) {
         return webClient
                 .get()
-                .uri(moviesInfoUrl.concat("/{id}"), movieId)
+                .uri(moviesInfoUrl + "/{id}", movieId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> handle4xxError(clientResponse, movieId))
                 .onStatus(HttpStatusCode::is5xxServerError, this::handle5xxError)
@@ -52,5 +53,17 @@ public class MoviesInfoRestClient {
 
         return response.bodyToMono(String.class)
                 .flatMap(errorBody -> Mono.error(new MoviesInfoServerException("Server Exception in MoviesInfoService " + errorBody)));
+    }
+
+    public Flux<MovieInfo> retrieveMovieInfoStream() {
+        return webClient
+                .get()
+                .uri(moviesInfoUrl + "/stream")
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> Mono.error(new MoviesInfoClientException(errorBody, response.statusCode().value()))))
+                .onStatus(HttpStatusCode::is5xxServerError, this::handle5xxError)
+                .bodyToFlux(MovieInfo.class)
+                .retryWhen(RetryUtil.retrySpec());
     }
 }
